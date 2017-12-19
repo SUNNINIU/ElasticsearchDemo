@@ -141,8 +141,13 @@ ElasticSearch 从2.x 至5.x api改动较大，本文仅以elasticsearch-2.3.3作
 	
 	6.成功启动完毕后，在浏览器上输入 http://localhost:8080/index 便可进行预览测试。
 
+项目效果图：
+
+![Image text](https://github.com/SUNNINIU/ElasticsearchDemo/blob/master/src/main/resources/static/image/ElasticsearchDemo.gif)
+
 备注：任何问题在github提交Issues,有时间会及时修复提交代码。
 
 本demo 参考文章 http://blog.csdn.net/hunanlzg/article/details/51658370 感谢！
+
 	
 	   
