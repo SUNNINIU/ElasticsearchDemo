@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<title>Index</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/src/jquery.typeahead.css}" rel="stylesheet" />
+<script src="http://code.jquery.com/jquery-2.1.0.min.js"></script>
+<script type="text/javascript" th:src="@{/src/jquery.typeahead.js}"></script>
+<!-- bootstrap -->
+<link type="text/css" rel="stylesheet"
+	href="http://cdn.staticfile.org/twitter-bootstrap/3.1.1/css/bootstrap.min.css" />
+<!-- 分页插件 -->
+<script type="text/javascript" th:src="@{/js/jqPaginator.js}"></script>
+<style>
+.item {
+	background: #FFFAF0;
+	width: 100%;
+	height: 60px;
+	max-width: 100%;
+	margin: 0 auto;
+	margin-top: 25px
+}
+
+.total {
+	margin-top: 10px
+}
+
+.pageContent {
+	margin-top: 30px;
+	margin-left: 20px;
+}
+</style>
+</head>
+<body>
+	<div style="width: 100%; max-width: 100%; margin: 0 auto;">
+		<div style="width: 100%; max-width: 800px; margin: 0 auto;">
+			<h1>搜索功能</h1>
+
+				<div class="typeahead__container">
+					<div class="typeahead__field">
+						<span class="typeahead__query"> <input class="typeahead"
+							id="typeahead" name="q" type="search" autocomplete="off"
+							autofocus="autofocus" placeholder="请输入关键字" />
+						</span> <span class="typeahead__button">
+							<button type="button" id="btSerch" onclick="search()">
+								<span class="typeahead__search-icon"></span>
+							</button>
+						</span>
+
+					</div>
+
+				</div>
+
+		</div>
+		<div
+			style="background: #CDCDB4; width: 100%; height: 30px; max-width: 100%; margin: 0 auto; margin-top: 25px">
+		</div>
+
+		<div class="content" id="content">
+
+			<div class="item">
+				<h1 style="margin-left: 30px; margin-top: 10px">welcome</h1>
+			</div>
+
+
+		</div>
+		<!--分页div默认隐藏  -->
+		<div class="pageContent" hidden="hidden">
+			<ul class="pagination" id="pagination1"></ul>
+		</div>
+
+		<script>
+			$.typeahead({
+						input : '.typeahead',
+						minLength : 1,
+						maxItem : 20,
+						order : "asc",
+						dynamic : true, //不使用缓存，每次到后台查询获取
+						//	href : "searchController/serchBykeyword?keyWord={{display}}", //点击item后搜索事件触发的url
+						template : "{{display}}",
+						emptyTemplate : 'No result for "{{query}}"',
+						correlativeTemplate : true,
+						source : {
+
+							ajax : {
+								type : "POST",
+								url : "searchController/serch",
+								path : "resList",
+								data : {
+									keyWord : "{{query}}"
+								},
+							}
+						},
+						callback : {
+							onNavigateAfter : function(node, lis, a, item,
+									query, event) {
+
+							},
+							onClickAfter : function(node, a, item, event) { //选择item的点击事件
+								event.preventDefault();
+								search();
+
+							},
+
+							onResult : function(node, query, result,
+									resultCount) {
+								console.log(result);
+
+							},
+							onMouseEnter : function(node, a, item, event) {
+
+								if (item.group === "country") {
+									$(a).append(
+											'<span class="flag-chart flag-'
+													+ item.display.replace(' ',
+															'-').toLowerCase()
+													+ '"></span>')
+								}
+
+							},
+							onMouseLeave : function(node, a, item, event) {
+
+								$(a).find('.flag-chart').remove();
+
+							}
+						}
+					});
+			//关键字搜索
+		    var currentPage = 0;
+			function search() {
+				//请求获取查询数据
+				var keyWord = document.getElementById("typeahead").value;
+				var pageSize = 10;
+			
+				var url = 'searchController/serchBykeyword';
+
+				$.getJSON(url,
+								{
+									"keyWord" : keyWord,
+									"pageSize" : pageSize,
+									"currentPage" : currentPage
+								},
+								function(data) {
+									var htmlStr = "";
+									var totalHtml = '<div class="total"><a>为您找到相关结果约'
+											+ data.total + '个</a></div>'
+									$
+											.each(
+													data.rows,
+													function(infoIndex, info) {
+
+														htmlStr += '<div class="item"><h4 style="margin-left: 30px; margin-top: 20px"><a href="javascript:void(0)">'
+																+ info.name
+																+ '</a></h4></div>'
+
+													});
+
+									if (data.total > 0) { //显示分页
+									    $(".pageContent").show(); 
+										$('#pagination1').jqPaginator('option', { //动态修改jqPaginator属性
+											currentPage : data.currentPage,
+											totalCounts : data.total,
+											pageSize : pageSize,
+										});
+									}
+									$("#content").empty();//清空div元素
+									$("#content").append(totalHtml + htmlStr);
+
+								});
+			}
+
+			//回车时间监听 
+			$(".typeahead").keyup(function(event) {
+				if (event.keyCode == 13) {
+					$("#btSerch").trigger("click");
+				}
+			});
+			//初始化分页插件jqPaginator
+			$('#pagination1').jqPaginator({
+				totalPages : 20, //默认20
+				//visiblePages : 10,
+				currentPage : 1,
+				onPageChange : function(num, type) {
+					currentPage=num;
+					search();
+					
+				}
+			});
+		</script>
+
+	</div>
+</body>
+</html>
